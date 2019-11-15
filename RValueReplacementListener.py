@@ -11,6 +11,7 @@ else:
 class RValueReplacementListener(ParseTreeListener):
     replacements = 0
     r_mapping = {}
+    r_package = None
     rewriter = None
 
     def __init__(self, tokens):
@@ -31,8 +32,8 @@ class RValueReplacementListener(ParseTreeListener):
 
     # Exit a parse tree produced by JavaParser#packageDeclaration.
     def exitPackageDeclaration(self, ctx:JavaParser.PackageDeclarationContext):
-        pass
-
+        if self.r_package:
+            self.rewriter.insertAfterToken(ctx.stop, '\n\nimport ' + '.'.join([self.r_package, 'R']))
 
     # Enter a parse tree produced by JavaParser#importDeclaration.
     def enterImportDeclaration(self, ctx:JavaParser.ImportDeclarationContext):

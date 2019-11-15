@@ -38,6 +38,7 @@ def parse_file(path):
 
 def main():
     parser = argparse.ArgumentParser(description='Restore R Values in Android Code')
+    parser.add_argument('-i', dest='add_r_import', action='store_true', help='add import for R into java files')
     parser.add_argument('-r', dest='r_file', required=True, help='specify location of R java file')
     parser.add_argument('-p', '--project', required=True, dest='j_files',
                         help='specify location of Android project')
@@ -69,6 +70,8 @@ def main():
         j_parser = parse_file(path)
         j_listener = RValueReplacementListener(j_parser.getTokenStream())
         j_listener.r_mapping = r_listener.r_mapping
+        if args.add_r_import:
+            j_listener.r_package = r_listener.package
 
         j_tree = j_parser.compilationUnit()
         j_walker.walk(j_listener, j_tree)

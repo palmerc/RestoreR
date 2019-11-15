@@ -7,6 +7,7 @@ else:
 
 # This class defines a complete listener for a parse tree produced by JavaParser.
 class RFileParserListener(ParseTreeListener):
+    package = ''
     r_variables = []
     r_mapping = {}
 
@@ -21,7 +22,7 @@ class RFileParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by JavaParser#packageDeclaration.
     def enterPackageDeclaration(self, ctx:JavaParser.PackageDeclarationContext):
-        pass
+        self.package = ctx.qualifiedName().getText()
 
     # Exit a parse tree produced by JavaParser#packageDeclaration.
     def exitPackageDeclaration(self, ctx:JavaParser.PackageDeclarationContext):
