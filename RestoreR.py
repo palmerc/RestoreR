@@ -67,26 +67,44 @@ def main():
         if os.path.basename(path) == 'R.java':
             continue
 
-        j_parser = parse_file(path)
-        j_listener = RValueReplacementListener(j_parser.getTokenStream())
-        j_listener.r_mapping = r_listener.r_mapping
+        print("First pass: {}".format(path))
+        first_pass_parser = parse_file(path)
+        first_pass_listener = RValueReplacementListener(first_pass_parser.getTokenStream())
+        first_pass_listener.r_mapping = r_listener.r_mapping
+
+        first_pass_tree = first_pass_parser.compilationUnit()
+        j_walker.walk(first_pass_listener, first_pass_tree)
+        replacement_count = first_pass_listener.replacements
+        if replacement_count > 0:
+            print("Identified {} hex values to be replaced.".format(replacement_count))
+        else:
+            continue
+
+        print("Rewriting tokens")
+        rewrite_parser = parse_file(path)
+        rewrite_listener = RValueReplacementListener(rewrite_parser.getTokenStream())
+        rewrite_listener.r_mapping = r_listener.r_mapping
+
+        rewrite_tree = rewrite_parser.compilationUnit()
+        j_walker.walk(first_pass_listener, rewrite_tree)
+
         if args.add_r_import:
-            j_listener.r_package = r_listener.package
+            rewrite_listener.r_package = r_listener.package
 
-        j_tree = j_parser.compilationUnit()
-        j_walker.walk(j_listener, j_tree)
+        rewrite_tree = rewrite_parser.compilationUnit()
+        j_walker.walk(rewrite_listener, rewrite_tree)
 
-        rewriter = j_listener.rewriter
+        rewriter = rewrite_listener.rewriter
         interval = Interval(0, len(rewriter.tokens.tokens) - 1)
         j_rewritten = rewriter.getText(rewriter.DEFAULT_PROGRAM_NAME, interval)
-        print("Processed " + path)
         if args.overwrite:
+            print("Overwriting file: {}".format(path))
             f = open(path, 'w')
             f.write(j_rewritten)
         else:
             print(j_rewritten)
 
-        replacements += j_listener.replacements
+        replacements += rewrite_listener.replacements
 
     print('Replaced ' + str(replacements) + ' hex values.')
 
