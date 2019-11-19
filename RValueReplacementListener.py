@@ -33,7 +33,7 @@ class RValueReplacementListener(ParseTreeListener):
     # Exit a parse tree produced by JavaParser#packageDeclaration.
     def exitPackageDeclaration(self, ctx:JavaParser.PackageDeclarationContext):
         if self.r_package:
-            self.rewriter.insertAfterToken(ctx.stop, '\n\nimport ' + '.'.join([self.r_package, 'R']))
+            self.rewriter.insertAfterToken(ctx.stop, '\n\nimport ' + '.'.join([self.r_package, 'R;']))
 
     # Enter a parse tree produced by JavaParser#importDeclaration.
     def enterImportDeclaration(self, ctx:JavaParser.ImportDeclarationContext):
